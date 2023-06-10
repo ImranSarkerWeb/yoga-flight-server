@@ -33,6 +33,11 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+    app.post("/addclass", async (req, res) => {
+      const newCourse = req.body;
+      const result = await cartCollection.insertOne(newCourse);
+      res.send(result);
+    });
 
     app.post("/carts", async (req, res) => {
       const course = req.body;
@@ -56,6 +61,7 @@ async function run() {
       res.send(result);
     });
 
+    //users related api
     app.post("/users", async (req, res) => {
       const user = req.body;
       const query = { email: user.email };
@@ -67,6 +73,24 @@ async function run() {
       const result = await usersCollection.insertOne(user);
       res.send(result);
     });
+
+    app.get("/users", async (req, res) => {
+      const result = await usersCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.patch("/users/admin/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateUser = {
+        $set: {
+          role: "admin",
+        },
+      };
+      const result = await usersCollection.updateOne(filter, updateUser);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
