@@ -79,12 +79,14 @@ async function run() {
       res.send(result);
     });
 
-    app.patch("/users/admin/:id", async (req, res) => {
-      const id = req.params.id;
+    app.patch("/users/admin/:data", async (req, res) => {
+      const data = req.params.data;
+      const splitData = data.split("+");
+      const id = splitData[0];
       const filter = { _id: new ObjectId(id) };
       const updateUser = {
         $set: {
-          role: "admin",
+          role: splitData[1],
         },
       };
       const result = await usersCollection.updateOne(filter, updateUser);
