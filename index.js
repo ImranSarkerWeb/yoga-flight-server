@@ -26,10 +26,17 @@ async function run() {
     await client.connect();
     const usersCollection = client.db("YogaDB").collection("users");
     const classCollection = client.db("YogaDB").collection("classes");
+    const cartCollection = client.db("YogaDB").collection("carts");
 
     app.get("/classes", async (req, res) => {
       const cursor = classCollection.find();
       const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    app.post("/carts", async (req, res) => {
+      const course = req.body;
+      const result = await cartCollection.insertOne(course);
       res.send(result);
     });
     app.post("/users", async (req, res) => {
