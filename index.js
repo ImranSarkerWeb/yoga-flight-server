@@ -3,6 +3,7 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const app = express();
 const cors = require("cors");
+const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 const port = process.env.PORT || 5000;
 
 //middleware
@@ -61,6 +62,17 @@ async function run() {
       }
       next();
     };
+    const verifyInstructor = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      if (user?.role !== "instructor") {
+        return res
+          .status(403)
+          .send({ error: true, message: "forbidden message" });
+      }
+      next();
+    };
 
     app.post("/jwt", (req, res) => {
       const user = req.body;
@@ -76,9 +88,10 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
-    app.post("/addclass", async (req, res) => {
+
+    app.post("/classes", verifyJWT, verifyInstructor, async (req, res) => {
       const newCourse = req.body;
-      const result = await cartCollection.insertOne(newCourse);
+      const result = await classCollection.insertOne(newCourse);
       res.send(result);
     });
 
@@ -156,6 +169,22 @@ async function run() {
       const result = { role: user?.role };
       res.send(result);
     });
+
+    // create payment intent
+    app.post("/create-payment-intent", verifyJWT, async (req, res) => {
+      const { price } = req.body;
+      const amount = parseInt(price * 100);
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
