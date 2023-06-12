@@ -132,7 +132,6 @@ async function run() {
       res.send(result);
     });
 
-    //try
     app.patch("/enrolled", async (req, res) => {
       const ids = req.body.ids;
 
