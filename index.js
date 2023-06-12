@@ -89,6 +89,13 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+
+    app.get("/popularclasses", async (req, res) => {
+      const cursor = classCollection.find().sort({ enrolled: -1 }).limit(6);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     app.get("/classes/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -123,6 +130,33 @@ async function run() {
 
       const result = await classCollection.updateOne(filter, updateFeedback);
       res.send(result);
+    });
+
+    //try
+    app.patch("/enrolled", async (req, res) => {
+      const ids = req.body.ids;
+
+      try {
+        const results = [];
+
+        for (const id of ids) {
+          const filter = { _id: new ObjectId(id) };
+
+          const update = {
+            $inc: {
+              availableSeats: -1,
+              enrolled: 1,
+            },
+          };
+
+          const result = await classCollection.updateOne(filter, update);
+          results.push(result);
+        }
+
+        res.send(results);
+      } catch (error) {
+        res.status(500).json({ error: "Failed to update classes" });
+      }
     });
 
     app.get("/instructors/:email", async (req, res) => {
