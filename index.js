@@ -183,6 +183,11 @@ async function run() {
       const result = await usersCollection.find().toArray();
       res.send(result);
     });
+    app.get("/instructors", async (req, res) => {
+      const query = { role: "instructor" };
+      const result = await usersCollection.find(query).toArray();
+      res.send(result);
+    });
 
     app.patch("/users/admin/:data", async (req, res) => {
       const data = req.params.data;
