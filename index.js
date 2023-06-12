@@ -46,7 +46,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     const usersCollection = client.db("YogaDB").collection("users");
     const classCollection = client.db("YogaDB").collection("classes");
     const cartCollection = client.db("YogaDB").collection("carts");
