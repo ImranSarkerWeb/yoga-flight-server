@@ -96,6 +96,41 @@ async function run() {
       const result = await classCollection.findOne(query);
       res.send(result);
     });
+    app.patch("/classes/admin/:data", async (req, res) => {
+      const data = req.params.data;
+      const splitData = data.split("+");
+      const id = splitData[0];
+      const filter = { _id: new ObjectId(id) };
+      const updateClass = {
+        $set: {
+          status: splitData[1],
+        },
+      };
+
+      const result = await classCollection.updateOne(filter, updateClass);
+      res.send(result);
+    });
+    app.patch("/feedback/admin/:data", async (req, res) => {
+      const data = req.params.data;
+      const splitData = data.split("+");
+      const id = splitData[0];
+      const filter = { _id: new ObjectId(id) };
+      const updateFeedback = {
+        $set: {
+          feedback: splitData[1],
+        },
+      };
+
+      const result = await classCollection.updateOne(filter, updateFeedback);
+      res.send(result);
+    });
+
+    app.get("/instructors/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { instructorEmail: email };
+      const result = await classCollection.find(query).toArray();
+      res.send(result);
+    });
 
     app.post("/classes", verifyJWT, verifyInstructor, async (req, res) => {
       const newCourse = req.body;
@@ -216,6 +251,16 @@ async function run() {
       const deleteResult = await cartCollection.deleteMany(query);
 
       res.send({ insertResult, deleteResult });
+    });
+
+    app.get("/payments/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+
+      const cursor = paymentCollection.find(query).sort({ date: -1 });
+      const result = await cursor.toArray();
+
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
